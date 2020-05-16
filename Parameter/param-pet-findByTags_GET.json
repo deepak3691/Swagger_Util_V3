@@ -1,0 +1,1 @@
+{"parameters":[{"schema":{"type":"array","items":{"type":"string"}},"in":"query","explode":true,"name":"tags","description":"Tags to filter by","style":"form","required":true}]}

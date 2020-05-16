@@ -1,0 +1,11 @@
+{
+  "schoolManagerName": {
+    "type": "string"
+  },
+  "visit": {
+    "$ref": "#/components/schemas/InspectionDto_VisitView"
+  },
+  "status": {
+    "$ref": "#/components/schemas/CoreFeaturesAPI_VisitReportStatus"
+  }
+}

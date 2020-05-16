@@ -1,0 +1,1 @@
+{"200":{"description":"successful operation","content":{"application/json":{"schema":{"code":{"format":"int32","type":"integer"},"type":{"type":"string"},"message":{"type":"string"}}}}}}

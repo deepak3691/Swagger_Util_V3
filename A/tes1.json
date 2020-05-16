@@ -1,0 +1,27 @@
+{
+  "items": {
+    "type": "array",
+    "items": [
+      {
+        "schoolManagerName": {
+          "type": "string"
+        },
+        "visit": {
+          "$ref": "#/components/schemas/InspectionDto_VisitView"
+        },
+        "status": {
+          "$ref": "#/components/schemas/CoreFeaturesAPI_VisitReportStatus"
+        }
+      }
+    ]
+  },
+  "status": {
+    "reason": {
+      "type": "string"
+    },
+    "statusCode": {
+      "format": "int32",
+      "type": "integer"
+    }
+  }
+}

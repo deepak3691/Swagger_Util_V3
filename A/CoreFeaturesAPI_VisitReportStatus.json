@@ -1,0 +1,11 @@
+{
+  "statusByTypeId": {
+    "additionalProperties": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/CoreFeaturesAPI_PersonnelReportStatus"
+      }
+    },
+    "type": "object"
+  }
+}

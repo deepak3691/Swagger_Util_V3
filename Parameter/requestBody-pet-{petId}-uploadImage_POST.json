@@ -1,0 +1,1 @@
+{"content":{"multipart/form-data":{"schema":{"properties":{"file":{"format":"binary","description":"file to upload","type":"string"},"additionalMetadata":{"description":"Additional data to pass to server","type":"string"}}}}}}

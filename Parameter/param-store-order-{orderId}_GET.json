@@ -1,0 +1,1 @@
+{"parameters":[{"schema":{"format":"int64","maximum":10,"type":"integer","minimum":1},"in":"path","name":"orderId","description":"ID of pet that needs to be fetched","required":true}]}

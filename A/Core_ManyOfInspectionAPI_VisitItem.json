@@ -1,0 +1,11 @@
+{
+  "items": {
+    "type": "array",
+    "items": {
+      "$ref": "#/components/schemas/InspectionAPI_VisitItem"
+    }
+  },
+  "status": {
+    "$ref": "#/components/schemas/Core_ReplyStatus"
+  }
+}

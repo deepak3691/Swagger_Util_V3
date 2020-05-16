@@ -1,0 +1,36 @@
+{
+  "schoolVisitPersonels": {
+    "type": "array",
+    "items": {
+      "$ref": "#/components/schemas/InspectionDtoVisitViewTypes_SchoolVisitPersonel"
+    }
+  },
+  "createdAt": {
+    "format": "date-time",
+    "type": "string"
+  },
+  "statusId": {
+    "format": "int32",
+    "type": "integer"
+  },
+  "school": {
+    "$ref": "#/components/schemas/InspectionDtoVisitViewTypes_School"
+  },
+  "schoolVisitTypes": {
+    "type": "array",
+    "items": {
+      "$ref": "#/components/schemas/InspectionDtoVisitViewTypes_SchoolVisitType"
+    }
+  },
+  "id": {
+    "format": "int32",
+    "type": "integer"
+  },
+  "isDone": {
+    "type": "boolean"
+  },
+  "scheduledAt": {
+    "format": "date-time",
+    "type": "string"
+  }
+}

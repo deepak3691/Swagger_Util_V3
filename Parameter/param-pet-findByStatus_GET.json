@@ -1,0 +1,1 @@
+{"parameters":[{"schema":{"type":"array","items":{"default":"available","type":"string","enum":["available","pending","sold"]}},"in":"query","explode":true,"name":"status","description":"Status values that need to be considered for filter","style":"form","required":true}]}

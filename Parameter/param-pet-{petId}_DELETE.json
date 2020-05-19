@@ -1,1 +1,0 @@
-{"parameters":[{"schema":{"type":"string"},"in":"header","name":"api_key"},{"schema":{"format":"int64","type":"integer"},"in":"path","name":"petId","description":"Pet id to delete","required":true}]}

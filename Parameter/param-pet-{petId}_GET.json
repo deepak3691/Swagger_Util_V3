@@ -1,1 +1,0 @@
-{"parameters":[{"schema":{"format":"int64","type":"integer"},"in":"path","name":"petId","description":"ID of pet to return","required":true}]}

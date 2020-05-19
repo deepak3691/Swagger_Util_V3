@@ -14,29 +14,49 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class KarateUtils {
+public class SwaggerUtils {
 
     public static String resourceName;
     public static String filename;
     public static FileInputStream fis = null;
     public static FileOutputStream fos = null;
-    public static XSSFWorkbook workbook = null;
+   public static XSSFWorkbook workbook = null;
     public static XSSFSheet sheet = null;
     public static XSSFRow row = null;
     public static XSSFCell cell = null;
-    public static String xlFilePath = System.getProperty("user.dir") + File.separator + "Test.xlsx";
+    public static String xlFilePath = System.getProperty("user.dir") + File.separator + "Test.xls";
     public static JSONParser parser = new JSONParser();
     public static Object fileObj;
+    public static String baseUrl;
     public static List<String> files;
     public static String paramterJsonFilePath = System.getProperty("user.dir") + File.separator + "Parameter" + File.separator;
     public static String componentJsonFilePath = System.getProperty("user.dir") + File.separator + "Components" + File.separator;
     public static String responseJsonFilePath = System.getProperty("user.dir") + File.separator + "Response" + File.separator;
     public static String featureFilePath = System.getProperty("user.dir") + File.separator + "Features" + File.separator;
 
+
+
+
+
+
+    //****************************************All files************************************************//
+
+    public static void dataGenerator(String swaggerJsonFilePath) throws Exception {
+        componentGenerator(swaggerJsonFilePath);
+        responseGenerator(swaggerJsonFilePath);
+        parameterGenerator(swaggerJsonFilePath);
+    }
+
+    public static void dataGenerator(String swaggerJsonFilePath, String resource, String method) throws Exception {
+        componentGenerator(swaggerJsonFilePath);
+        parameterGenerator(swaggerJsonFilePath, resource, method);
+        responseGenerator(swaggerJsonFilePath, resource, method);
+    }
 
     //**********************************Component Generator from swagger file*****************************//
 
@@ -77,7 +97,6 @@ public class KarateUtils {
             while (componentJson.toString().contains("#/components")) {
                 componentJson = replacekeyInJSONObject(componentJson);
             }
-            //System.out.println(componentJson);
             jsonFileGenerator(componentFilePath, componentFileName, componentJson.toString());
         }
     }
@@ -85,6 +104,72 @@ public class KarateUtils {
     //**********************************Response Generator from swagger file*****************************//
 
     public static void responseGenerator(String swaggerJsonFilePath) throws Exception {
+        try {
+            cleanDirectory(responseJsonFilePath);
+            fileObj = parser.parse(new FileReader(swaggerJsonFilePath));
+            JSONObject pathJson = new JSONObject(fileObj.toString()).getJSONObject("paths");
+
+            baseUrl = new JSONObject(fileObj.toString()).getJSONArray("servers").getJSONObject(0).get("url").toString();
+
+            //Resources
+            List<String> resourceList = new ArrayList<>(pathJson.keySet());
+
+            for (int i = 0; i < resourceList.size(); i++) {
+                JSONObject resourceJson = pathJson.getJSONObject(resourceList.get(i));
+
+                //Request Method
+                List<String> methodList = new ArrayList<>(resourceJson.keySet());
+
+                for (int j = 0; j < methodList.size(); j++) {
+                    JSONObject responseJson = resourceJson.getJSONObject(methodList.get(j)).getJSONObject("responses");
+
+                    resourceName = resourceList.get(i).replaceAll("/", "-");
+                    filename = "response" + resourceName + "_" + methodList.get(j).toUpperCase();
+                    jsonFileGenerator(responseJsonFilePath, filename, responseJson.toString());
+                }
+            }
+        } catch (ParseException | IOException e) {
+            e.printStackTrace();
+        }
+        resolveResponse(responseJsonFilePath,baseUrl);
+    }
+
+    public static void resolveResponse(String responseJsonFilePath,String baseUrl) throws Exception {
+        files = getFiles(responseJsonFilePath);
+        Collections.sort(files);
+
+        for (int i = 0; i < files.size(); i++) {
+
+            String responseFileName = getFileName(responseJsonFilePath, files.get(i));
+            //  System.out.println("For " + responseFileName);
+
+            fileObj = parser.parse(new FileReader(files.get(i)));
+            JSONObject responseJson = new JSONObject(fileObj.toString());
+
+            while (responseJson.toString().contains("#/components")) {
+                responseJson = replacekeyInJSONObject(responseJson);
+            }
+
+            String resourceName = responseFileName.split("_")[0].replace("response-", "/").replace("-", "/");
+            String methodName = responseFileName.split("_")[1];
+
+            jsonFileGenerator(responseJsonFilePath, responseFileName, responseJson.toString());
+
+            //Writing data to an excel
+          //  setCellData("Sheet1", "BaseUrl", i + 2, baseUrl);
+           // setCellData("Sheet1", "Resource", i + 2, resourceName);
+          //  setCellData("Sheet1", "Method", i + 2, methodName);
+        //    setCellData("Sheet1", "Response", i + 2, responseJson.toString());
+        //    System.out.println("Done for : " +resourceName );
+
+
+
+        }
+    }
+
+    //******************************For requested response**********************************************//
+
+    public static void responseGenerator(String swaggerJsonFilePath, String resource, String method) throws Exception {
         try {
             cleanDirectory(responseJsonFilePath);
             fileObj = parser.parse(new FileReader(swaggerJsonFilePath));
@@ -110,18 +195,15 @@ public class KarateUtils {
         } catch (ParseException | IOException e) {
             e.printStackTrace();
         }
-        resolveResponse(responseJsonFilePath);
+        resolveResponse(responseJsonFilePath, resource, method);
     }
 
 
-    public static void resolveResponse(String responseJsonFilePath) throws IOException, ParseException {
+    public static void resolveResponse(String responseJsonFilePath, String resource, String method) throws IOException, ParseException {
         files = getFiles(responseJsonFilePath);
 
         for (int i = 0; i < files.size(); i++) {
-
             String responseFileName = getFileName(responseJsonFilePath, files.get(i));
-            //  System.out.println("For " + responseFileName);
-
             fileObj = parser.parse(new FileReader(files.get(i)));
             JSONObject responseJson = new JSONObject(fileObj.toString());
 
@@ -129,8 +211,14 @@ public class KarateUtils {
                 responseJson = replacekeyInJSONObject(responseJson);
             }
 
-            //System.out.println(responseJson);
-            jsonFileGenerator(responseJsonFilePath, responseFileName, responseJson.toString());
+            String resourceName = responseFileName.split("_")[0].replace("response-", "/").replace("-", "/");
+            String methodName = responseFileName.split("_")[1];
+
+            if (resourceName.equals(resource) && methodName.equals(method)) {
+                System.out.println("\n" + "Response for resource " + resourceName + " for method " + methodName + " is:" + "\n");
+                System.out.println(responseJson);
+                break;
+            }
         }
     }
 
@@ -159,7 +247,7 @@ public class KarateUtils {
                     if (resourceJson.getJSONObject(methodList.get(j)).keySet().contains("requestBody")) {
                         JSONObject requestBodyJson = resourceJson.getJSONObject(methodList.get(j)).getJSONObject("requestBody");
                         resourceName = resourceList.get(i).replaceAll("/", "-");
-                        filename = "requestBody" + resourceName + "_" + methodList.get(j).toUpperCase();
+                        filename = "param" + resourceName + "_" + methodList.get(j).toUpperCase() + "_requestBody";
                         jsonFileGenerator(paramterJsonFilePath, filename, requestBodyJson.toString());
 
                     } else if (resourceJson.getJSONObject(methodList.get(j)).keySet().contains("parameters")) {
@@ -168,6 +256,10 @@ public class KarateUtils {
                         filename = "param" + resourceName + "_" + methodList.get(j).toUpperCase();
                         paramJson.put("parameters", parameterJsonArray);
                         jsonFileGenerator(paramterJsonFilePath, filename, paramJson.toString());
+                    } else {
+                        resourceName = resourceList.get(i).replaceAll("/", "-");
+                        filename = "param" + resourceName + "_" + methodList.get(j).toUpperCase() + "_"+ "ParamNotRequired";
+                        jsonFileGenerator(paramterJsonFilePath, filename, "{\"parameters\":[{\"Description\":\"Parameter not required\"}]}");
                     }
                 }
             }
@@ -177,7 +269,74 @@ public class KarateUtils {
         resolveParameter(paramterJsonFilePath);
     }
 
-    public static void resolveParameter(String parameterJsonFilePath) throws IOException, ParseException {
+    public static void resolveParameter(String parameterJsonFilePath) throws Exception {
+        files = getFiles(parameterJsonFilePath);
+        Collections.sort(files);
+
+        for (int i = 0; i < files.size(); i++) {
+            String paramterFileName = getFileName(parameterJsonFilePath, files.get(i));
+            fileObj = parser.parse(new FileReader(files.get(i)));
+            JSONObject parameterJson = new JSONObject(fileObj.toString());
+
+            while (parameterJson.toString().contains("#/components")) {
+                parameterJson = replacekeyInJSONObject(parameterJson);
+            }
+            jsonFileGenerator(parameterJsonFilePath, paramterFileName, parameterJson.toString());
+
+            //Writing parameters to an excel
+          //  setCellData("Sheet1", "Parameter", i + 2, parameterJson.toString());
+        }
+
+    }
+
+    //******************************For requested Parameter**********************************************//
+
+    public static void parameterGenerator(String swaggerJsonFilePath, String resource, String method) throws Exception {
+
+        JSONObject paramJson = new JSONObject();
+
+        try {
+            cleanDirectory(paramterJsonFilePath);
+            fileObj = parser.parse(new FileReader(swaggerJsonFilePath));
+            JSONObject pathJson = new JSONObject(fileObj.toString()).getJSONObject("paths");
+
+            //Resources
+            List<String> resourceList = new ArrayList<>(pathJson.keySet());
+
+            for (int i = 0; i < resourceList.size(); i++) {
+                JSONObject resourceJson = pathJson.getJSONObject(resourceList.get(i));
+
+                //Request Method
+                List<String> methodList = new ArrayList<>(resourceJson.keySet());
+
+                for (int j = 0; j < methodList.size(); j++) {
+
+                    if (resourceJson.getJSONObject(methodList.get(j)).keySet().contains("requestBody")) {
+                        JSONObject requestBodyJson = resourceJson.getJSONObject(methodList.get(j)).getJSONObject("requestBody");
+                        resourceName = resourceList.get(i).replaceAll("/", "-");
+                        filename = "param" + resourceName + "_" + methodList.get(j).toUpperCase() + "_requestBody";
+                        jsonFileGenerator(paramterJsonFilePath, filename, requestBodyJson.toString());
+
+                    } else if (resourceJson.getJSONObject(methodList.get(j)).keySet().contains("parameters")) {
+                        JSONArray parameterJsonArray = resourceJson.getJSONObject(methodList.get(j)).getJSONArray("parameters");
+                        resourceName = resourceList.get(i).replaceAll("/", "-");
+                        filename = "param" + resourceName + "_" + methodList.get(j).toUpperCase();
+                        paramJson.put("parameters", parameterJsonArray);
+                        jsonFileGenerator(paramterJsonFilePath, filename, paramJson.toString());
+                    }else {
+                        resourceName = resourceList.get(i).replaceAll("/", "-");
+                        filename = "param" + resourceName + "_" + methodList.get(j).toUpperCase() + "_"+ "ParamNotRequired";
+                        jsonFileGenerator(paramterJsonFilePath, filename, "{\"parameters\":[{\"Description\":\"Parameter not required\"}]}");
+                    }
+                }
+            }
+        } catch (ParseException | IOException e) {
+            e.printStackTrace();
+        }
+        resolveParameter(paramterJsonFilePath, resource, method);
+    }
+
+    public static void resolveParameter(String parameterJsonFilePath, String resource, String method) throws IOException, ParseException {
 
         files = getFiles(parameterJsonFilePath);
 
@@ -189,9 +348,16 @@ public class KarateUtils {
             while (parameterJson.toString().contains("#/components")) {
                 parameterJson = replacekeyInJSONObject(parameterJson);
             }
-            jsonFileGenerator(parameterJsonFilePath, paramterFileName, parameterJson.toString());
-        }
 
+            String resourceName = paramterFileName.split("_")[0].replace("param-", "/").replace("-", "/");
+            String methodName = paramterFileName.split("_")[1];
+
+            if (resourceName.equals(resource) && methodName.equals(method)) {
+                System.out.println("\n" + "Parameter for resource " + resourceName + " for method " + methodName + " is:" + "\n");
+                System.out.println(parameterJson);
+                break;
+            }
+        }
     }
 
     //*********************************Other Reusable Utilities************************************//
@@ -315,11 +481,11 @@ public class KarateUtils {
         fis = new FileInputStream(xlFilePath);
         workbook = new XSSFWorkbook(fis);
         fis.close();
+
     }
 
     public static boolean setCellData(String sheetName, String colName, int rowNum, String value) throws Exception {
 
-        ExcelApiTest(xlFilePath);
         try {
             int col_Num = -1;
             sheet = workbook.getSheet(sheetName);
@@ -351,6 +517,8 @@ public class KarateUtils {
         }
         return true;
     }
+
+
 }
 
 

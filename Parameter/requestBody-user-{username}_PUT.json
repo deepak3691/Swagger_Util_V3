@@ -1,1 +1,0 @@
-{"description":"Updated user object","content":{"*/*":{"schema":{"firstName":{"type":"string"},"lastName":{"type":"string"},"password":{"type":"string"},"userStatus":{"format":"int32","description":"User Status","type":"integer"},"phone":{"type":"string"},"id":{"format":"int64","type":"integer"},"email":{"type":"string"},"username":{"type":"string"}}}},"required":true}

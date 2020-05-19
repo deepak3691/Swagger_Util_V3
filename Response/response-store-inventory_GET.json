@@ -1,1 +1,0 @@
-{"200":{"description":"successful operation","content":{"application/json":{"schema":{"additionalProperties":{"format":"int32","type":"integer"},"type":"object"}}}}}

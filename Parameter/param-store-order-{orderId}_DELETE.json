@@ -1,1 +1,0 @@
-{"parameters":[{"schema":{"format":"int64","type":"integer","minimum":1},"in":"path","name":"orderId","description":"ID of the order that needs to be deleted","required":true}]}

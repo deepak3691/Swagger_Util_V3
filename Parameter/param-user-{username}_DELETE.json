@@ -1,1 +1,0 @@
-{"parameters":[{"schema":{"type":"string"},"in":"path","name":"username","description":"The name that needs to be deleted","required":true}]}
